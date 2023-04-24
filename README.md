@@ -40,7 +40,7 @@ int main() {
 
 ## License
 
-// TODO
+GPSense is licensed under the MIT License.
 
 ## Contributing
 
