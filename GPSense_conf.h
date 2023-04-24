@@ -7,7 +7,8 @@
 /************************************************************************************************************/
 /*                                     MACRO AND CONSTANT DEFINE                                            */
 /************************************************************************************************************/
-#define CONFIG_GPS_RCV_BUFFER_LEN      (256)
+#define CONFIG_GPS_SKIP_CHECKSUM_CHECK  (0)
+#define CONFIG_GPS_RCV_BUFFER_LEN       (256)
 
 
 // PRINTF MACRO HERE
