@@ -51,7 +51,7 @@ bool GPSense_feed(const char * p_data, const uint32_t data_len)
     memset(gps.rcv_buffer, 0x0, sizeof(gps.rcv_buffer));
     gps.rcv_idx = 0;
   }
-  GPS_LOGV("GPS feed data len:%d", data_len);
+  GPS_LOGV("GPS feed data:%.*s len:%d", data_len, p_data, data_len);
   //copy data to buffer to process
   memcpy(&gps.rcv_buffer[gps.rcv_idx], (uint8_t*) p_data, data_len);
   gps.rcv_idx += data_len;
@@ -87,6 +87,12 @@ static void gps_process()
   {
     int temp;
     end_idx = char_find_idx(gps.rcv_buffer, CONFIG_GPS_RCV_BUFFER_LEN, GPS_END_MSG_CHAR);
+    if(end_idx == -1)
+    {
+      // did not find the end message, maybe the message is not finished
+      GPS_LOGV("Process message: not finised");
+      break;
+    }
     // if there is other '$' between start and end idx, consider that message is invalid
     temp = char_find_idx(gps.rcv_buffer+1, end_idx, GPS_START_MSG_CHAR);
     if(temp >= 0)
@@ -95,12 +101,6 @@ static void gps_process()
       mem_shift_left(gps.rcv_buffer, CONFIG_GPS_RCV_BUFFER_LEN, temp + 1);
       gps.rcv_idx -= (temp + 1);
       continue;
-    }
-    if(end_idx == -1)
-    {
-      // did not find the end message, maybe the message is not finished
-      GPS_LOGV("Process message: not finised");
-      break;
     }
     if(end_idx > 2) 
     {
