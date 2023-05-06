@@ -1,9 +1,10 @@
-#ifndef __GPS_UTILITY_H__
-#define __GPS_UTILITY_H__
+#ifndef __GPS_DEF_H__
+#define __GPS_DEF_H__
 /************************************************************************************************************/
 /*                                              INCLUDE                                                     */
 /************************************************************************************************************/
 #include <stdint.h>
+#include <stdbool.h>
 /************************************************************************************************************/
 /*                                     MACRO AND CONSTANT DEFINE                                            */
 /************************************************************************************************************/
@@ -11,14 +12,37 @@
 /************************************************************************************************************/
 /*                                            MODULE TYPE                                                   */
 /************************************************************************************************************/
+typedef enum
+{
+  GPS_DIR_WEST = 'W',
+  GPS_DIR_EAST = 'E',
+  GPS_DIR_NORTH = 'N',
+  GPS_DIR_SOUTH = 'S',
+} gps_dir_t;
+typedef enum
+{
+  GPS_POS_LONG,
+  GPS_POS_LAT,
+  NUM_OF_GPS_POS_T,
+} gps_pos_type_t;
+typedef float gps_long_lat_t;
+typedef struct
+{
+  gps_pos_type_t      pos_type;
+  gps_long_lat_t      pos;
+  gps_dir_t           dir;
+} gps_pos_t;
 
+typedef struct
+{
+  uint8_t hour;
+  uint8_t minute;
+  uint8_t second;
+  uint8_t centisecond;
+} gps_clock_time_t;
 
 /************************************************************************************************************/
 /*                                           PUBLIC FUNCTION                                                */
 /************************************************************************************************************/
-void mem_shift_left(uint8_t *p_buffer, uint32_t buffer_len, uint32_t num_shift);
-int char_find_idx(const uint8_t * p_buffer, const uint32_t buffer_len, const char ch);
-uint32_t hex_str_to_int(char *hex_str, uint32_t str_len);
-void get_nmea_header(uint8_t * p_data, uint32_t data_len, uint8_t *p_ret);
-int str2int(const char* str, int len);
+
 #endif

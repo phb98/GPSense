@@ -4,32 +4,55 @@
 #include "gps_parser.h"
 #include "GPSense_conf.h"
 #include "gps_utility.h"
+#include "gps_def.h"
 #include <stdint.h>
 #include <string.h>
+#include <stdlib.h>
 /************************************************************************************************************/
 /*                                     MACRO AND CONSTANT DEFINE                                            */
 /************************************************************************************************************/
 #define ARRAY_LENGTH(array) (sizeof((array))/sizeof((array)[0]))
-#define SUB_PARSER_DEFINE(name) void name##_parser(const uint8_t * p_data, uint32_t data_len)
 #define SUB_PARSER_FUNC(name) name##_parser
+#define SUB_PARSER_DEFINE(name) void name##_parser(sub_parser_param_t data)
 #define MSG_ID_MAX_LENGTH (8)
-
+#define NMEA_MESSAGE_TERMINATOR ('*')
+#define IS_DATA_FIELD_AVAILABLE(p_data) (!(*((char*)p_data + 1) == ',' || *((char*)p_data + 1) == '*'))
 /************************************************************************************************************/
 /*                                            MODULE TYPE                                                   */
 /************************************************************************************************************/
+
+typedef struct 
+{
+  const gps_parser_talker_id_t * talker_id;
+  const uint8_t * p_msg_id;
+  size_t msg_id_len;
+  const uint8_t * p_data;
+  size_t data_len;
+} sub_parser_param_t;
 typedef struct
 {
   const char * msg_id;
   const gps_parser_talker_id_t talker_id_support;
-  void (*parser_func)(const uint8_t * p_data, uint32_t data_len);
+  void (*parser_func)(sub_parser_param_t data);
 } sub_parser_func_t;
 
+typedef enum
+{
+  GGA_UTC,
+  GGA_LAT,
+  GGA_LAT_DIR,
+  GGA_LON,
+  GGA_LON_DIR,
+  GGA_QUALITY,
+  NUM_OF_GGA_SUPPORT,
+} gga_data_t; // must be in order of data appear in message
 /************************************************************************************************************/
 /*                                     PRIVATE FUNCTION PROTOTYPES                                          */
 /************************************************************************************************************/
 static bool main_parser_func(const uint8_t * p_data, uint32_t data_len);
 static int get_parser_func_idx(const gps_parser_talker_id_t talker_id, const uint8_t * msg_id);
 
+static bool get_raw_data(uint8_t data_type, const uint8_t * p_data, uint32_t data_len, uint8_t * p_ret);
 SUB_PARSER_DEFINE(GGA);
 SUB_PARSER_DEFINE(GLL);
 SUB_PARSER_DEFINE(GSV);
@@ -91,6 +114,10 @@ static bool main_parser_func(const uint8_t * p_data, uint32_t data_len)
     GPS_LOGV("Unsupported NMEA header:%s", nmea_header);
     return false;
   }
+  // Create param for sub parser
+  sub_parser_param_t parser_param = {0};
+  parser_param.talker_id = talker_id;
+  parser_param.p_msg_id = p_data;
   // Discard the NMEA header so that subparser does not have to do
   uint32_t comma_idx = char_find_idx(p_data, data_len, ',');
   if(comma_idx == -1)
@@ -100,9 +127,13 @@ static bool main_parser_func(const uint8_t * p_data, uint32_t data_len)
   }
   p_data += (comma_idx + 1);
   data_len -= (comma_idx + 1);
+
+  parser_param.msg_id_len = comma_idx;
+  parser_param.p_data = p_data;
+  parser_param.data_len = data_len;
   // Excute the sub parser 
   GPS_LOGV("Found sub parser idx:%d", sub_parser_idx);
-  sub_parser_table[sub_parser_idx].parser_func(p_data, data_len);
+  sub_parser_table[sub_parser_idx].parser_func(parser_param);
   return true;
 }
 
@@ -120,19 +151,124 @@ static int get_parser_func_idx(const gps_parser_talker_id_t talker_id, const uin
   }
   return -1;
 }
+static bool get_raw_data_between_comma(uint8_t data_type, const uint8_t * p_data, uint32_t data_len, uint8_t * p_ret)
+{
+
+}
 /************************************************************************************************************/
 /*                                          SUB PARSER                                                      */
 /************************************************************************************************************/
-// sub parser, assuming NMEA header has been discarded
 SUB_PARSER_DEFINE(GGA)
 {
-  GPS_LOGV("%.*s", data_len, p_data);
+  // sanity check
+  if(!data.p_data || data.p_data[0] < '0' || data.p_data[0] > '9')
+  {
+    GPS_LOGE("Invalid input to subparser");
+    return;
+  }
+  #define GPS_LOG_POS(type, pos, dir) GPS_LOGV("GGA %s:%f %c", type, pos, dir)
+  GPS_LOGV("%.*s", data.data_len, data.p_data);
+  uint8_t temp_buffer[32];
+  memset(temp_buffer, 0x0, sizeof(temp_buffer));
+  struct 
+  {
+    gps_clock_time_t utc_time;
+    gps_pos_t   longtitude;
+    gps_pos_t   latitude;
+  } parsed_data =
+  {
+    .latitude.pos_type =   GPS_POS_LAT,
+    .longtitude.pos_type = GPS_POS_LONG
+  };
+  const uint8_t * p_start = data.p_data;
+  const uint8_t * p_end  = p_start + data.data_len - 1;
+  gga_data_t currert_parsing_data = GGA_UTC;
+  int comma_idx = -1;
+  GPS_LOGV("Start:%c, End:%c", *p_start, *p_end);
+  while(p_start <= p_end && (currert_parsing_data < NUM_OF_GGA_SUPPORT))
+  {
+    if(*p_start == NMEA_MESSAGE_TERMINATOR)
+    {
+      GPS_LOGV("Sub parser done");
+      break;
+    }
+    // parser each data field
+    comma_idx = char_find_idx(p_start, p_end - p_start + 1, ',');    
+    if(comma_idx == -1) 
+    {
+      GPS_LOGD("Cannot find next ',', break");
+      break;
+    }
+    else if(comma_idx > 0)
+    {
+      // this data field has data
+      GPS_LOGV("Comma_idx:%d", comma_idx);
+      memcpy(temp_buffer, p_start, comma_idx);
+      GPS_LOGV("Field %d: %.*s, len:%d", currert_parsing_data, comma_idx, temp_buffer, strlen(temp_buffer));
+      switch(currert_parsing_data)
+      {
+        case GGA_UTC:
+        {
+          // Parsing utc time
+          uint8_t * p_temp = p_start;
+          parsed_data.utc_time.hour = str2int(p_temp, 2); p_temp +=2;
+          parsed_data.utc_time.minute = str2int(p_temp, 2);p_temp += 2;
+          parsed_data.utc_time.second = str2int(p_temp, 2);p_temp += 3;
+          parsed_data.utc_time.centisecond = str2int(p_temp, 2);
+          GPS_LOGD("UTC time:%02d:%02d:%02d.%02d",parsed_data.utc_time.hour, parsed_data.utc_time.minute,
+                                                  parsed_data.utc_time.second, parsed_data.utc_time.centisecond);
+          break;
+        }
+        case GGA_LAT:
+        {
+          uint8_t * p_temp = p_start;
+          parsed_data.latitude.pos = str2int(p_temp, 2); p_temp +=2;
+          parsed_data.latitude.pos += (atof(p_temp) / 60.0);
+          GPS_LOGD("Latitude:%f", parsed_data.latitude.pos);
+          break;
+        }
+        case GGA_LAT_DIR:
+        {
+          if(*p_start == 'N') parsed_data.latitude.dir = GPS_DIR_NORTH;
+          else parsed_data.latitude.dir = GPS_DIR_SOUTH; // this risky, but I will take it anyway
+          break;
+        }
+        case GGA_LON_DIR:
+        {
+          if(*p_start == 'W') parsed_data.longtitude.dir = GPS_DIR_WEST;
+          else parsed_data.latitude.dir = GPS_DIR_EAST; // this risky, but I will take it anyway
+          break;
+        }
+        case GGA_LON:
+        {
+          uint8_t * p_temp = p_start;
+          parsed_data.longtitude.pos = str2int(p_temp, 3); p_temp +=3;
+          parsed_data.longtitude.pos += (atof(p_temp) / 60.0);
+          GPS_LOGD("Longtitude:%f", parsed_data.longtitude.pos);
+          break;
+        }
+        default:
+        break;
+      }
+      memset(temp_buffer, 0x0, sizeof(temp_buffer));
+      p_start += (comma_idx + 1);
+    }
+    else
+    {
+      // This data field has no data, try next field
+      GPS_LOGV("Field:%d has no data", currert_parsing_data);
+      p_start++;
+    }
+    currert_parsing_data++;
+  }
 }
 SUB_PARSER_DEFINE(GLL)
 {
-  GPS_LOGV("%.*s", data_len, p_data);
+  GPS_LOGV("%.*s", data.data_len, data.p_data);
+
 }
 SUB_PARSER_DEFINE(GSV)
 {
-  GPS_LOGV("%.*s", data_len, p_data);
+  GPS_LOGV("%.*s", data.data_len, data.p_data);
+
 }

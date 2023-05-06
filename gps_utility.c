@@ -71,6 +71,18 @@ void get_nmea_header(uint8_t * p_data, uint32_t data_len, uint8_t *p_ret)
   }
   else p_ret[0] = '\0';
 }
+
+int str2int(const char* str, int len)
+{
+    int i;
+    int ret = 0;
+    for(i = 0; i < len; ++i)
+    {
+        if(str[i] > '9' || str[i] < '0') return 0;
+        ret = ret * 10 + (str[i] - '0');
+    }
+    return ret;
+}
 /************************************************************************************************************/
 /*                                          PRIVATE FUNCTION                                                */
 /************************************************************************************************************/
