@@ -18,7 +18,7 @@
 /************************************************************************************************************/
 void mem_shift_left(uint8_t *p_buffer, uint32_t buffer_len, uint32_t num_shift);
 int char_find_idx(const uint8_t * p_buffer, const uint32_t buffer_len, const char ch);
-uint32_t hex_str_to_int(char *hex_str, uint32_t str_len);
-void get_nmea_header(uint8_t * p_data, uint32_t data_len, uint8_t *p_ret);
+uint32_t hex_str_to_int(const char *hex_str, uint32_t str_len);
+void get_nmea_header(const uint8_t * p_data, uint32_t data_len, uint8_t *p_ret);
 int str2int(const char* str, int len);
 #endif

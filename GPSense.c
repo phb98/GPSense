@@ -56,13 +56,13 @@ bool GPSense_feed(const char * p_data, const uint32_t data_len)
   memcpy(&gps.rcv_buffer[gps.rcv_idx], (uint8_t*) p_data, data_len);
   gps.rcv_idx += data_len;
   gps_process();
+  return true;
 }
 /************************************************************************************************************/
 /*                                          PRIVATE FUNCTION                                                */
 /************************************************************************************************************/
 static void gps_process()
 {
-  const uint8_t nmea_end[2] = {'\r', '\n'};
   //find the first '$'
   int start_idx = char_find_idx(gps.rcv_buffer, CONFIG_GPS_RCV_BUFFER_LEN, GPS_START_MSG_CHAR);
   int end_idx = 0;

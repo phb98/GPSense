@@ -43,7 +43,7 @@ int char_find_idx(const uint8_t * p_buffer, const uint32_t buffer_len, const cha
  * hex_str_to_int
  * take a hex string and convert it to a 32bit number (max 8 hex digits)
  */
-uint32_t hex_str_to_int(char *hex_str, uint32_t str_len) 
+uint32_t hex_str_to_int(const char *hex_str, uint32_t str_len) 
 {
   if(!str_len) return 0;
   uint32_t val = 0;
@@ -60,7 +60,7 @@ uint32_t hex_str_to_int(char *hex_str, uint32_t str_len)
   }
   return val;
 }
-void get_nmea_header(uint8_t * p_data, uint32_t data_len, uint8_t *p_ret)
+void get_nmea_header(const uint8_t * p_data, uint32_t data_len, uint8_t *p_ret)
 {
   if(!p_data || !p_ret || !data_len) return;
   int comma_idx = char_find_idx(p_data, data_len, ',');

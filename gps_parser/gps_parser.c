@@ -33,7 +33,7 @@ static struct
 /*                                     PRIVATE FUNCTION PROTOTYPES                                          */
 /************************************************************************************************************/
 static bool gps_parser_validate(const uint8_t * p_data, uint32_t data_len);
-static void gps_parser_process(uint8_t * p_data, uint32_t data_len);
+static void gps_parser_process(const uint8_t * p_data, uint32_t data_len);
 /************************************************************************************************************/
 /*                                           PUBLIC FUNCTION                                                */
 /************************************************************************************************************/
@@ -154,7 +154,7 @@ bool gps_parser_get_message_id(const uint8_t * p_data, uint32_t data_len, uint8_
 /************************************************************************************************************/
 /*                                          PRIVATE FUNCTION                                                */
 /************************************************************************************************************/
-static void gps_parser_process(uint8_t * p_data, uint32_t data_len)
+static void gps_parser_process(const uint8_t * p_data, uint32_t data_len)
 {
   bool msg_processed = false;
   // call each parser function
@@ -183,7 +183,7 @@ static bool gps_parser_validate(const uint8_t * p_data, uint32_t data_len)
   }
   // check if message has checksum
   if((data_len < (CHECKSUM_STR_LEN + 1)) || (p_data[data_len - 1 - CHECKSUM_STR_LEN] != CHECKSUM_START_CHAR)) return false;
-  uint32_t expect_checksum = hex_str_to_int(&p_data[data_len-CHECKSUM_STR_LEN], CHECKSUM_STR_LEN);
+  uint32_t expect_checksum = hex_str_to_int((const char *)&p_data[data_len-CHECKSUM_STR_LEN], CHECKSUM_STR_LEN);
   uint32_t calculated_checksum = 0;
   // calculate checksum by xor together
   for(uint32_t i = 0; i < (data_len - 1 - CHECKSUM_STR_LEN); i++)
