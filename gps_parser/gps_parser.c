@@ -51,7 +51,7 @@ bool gps_parser_push(const uint8_t * p_data, uint32_t data_len)
   if(CONFIG_GPS_SKIP_CHECKSUM_CHECK || gps_parser_validate(p_data, data_len))
   {
     // message is valid
-    GPS_LOGD("Checksum %s", CONFIG_GPS_SKIP_CHECKSUM_CHECK ? "Skipped" : "Valid");
+    GPS_LOGV("Checksum %s", CONFIG_GPS_SKIP_CHECKSUM_CHECK ? "Skipped" : "Valid");
     // Truncate the checksum path since it's not needed anymore
     data_len -= (CHECKSUM_STR_LEN);
     gps_parser_process(p_data, data_len);
