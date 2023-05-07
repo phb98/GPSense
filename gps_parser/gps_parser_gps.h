@@ -1,25 +1,33 @@
-#ifndef __GPS_PARSER_H__
-#define __GPS_PARSER_H__
+#ifndef __GPS_PARSER_GPS_H__
+#define __GPS_PARSER_GPS_H__
 /************************************************************************************************************/
 /*                                              INCLUDE                                                     */
 /************************************************************************************************************/
+#include "gps_parser.h"
+#include "gps_def.h"
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdlib.h>
 /************************************************************************************************************/
 /*                                     MACRO AND CONSTANT DEFINE                                            */
 /************************************************************************************************************/
+#define SUB_PARSER_FUNC(name) name##_parser
+#define SUB_PARSER_DEFINE(name) void name##_parser(sub_parser_param_t data)
 
-
-#define GPS_TALKER_ID_INVALID           (0)
-#define GPS_TALKER_ID_GPS               (1UL << 0)
-#define GPS_TALKER_ID_GALILEO           (1UL << 2)
-#define GPS_TALKER_ID_BEIDOU            (1UL << 3)
-#define GPS_TALKER_ID_GLONASS           (1UL << 4)
-#define GPS_TALKER_ID_COMBINE           (1UL << 5)
-#define GPS_TALKER_ID_UNKNOW            (1Ul << 31)
-typedef uint32_t gps_parser_talker_id_t;
-typedef bool (*gps_parser_func_t)(const uint8_t * p_data, uint32_t data_len);
-
+typedef struct 
+{
+  gps_parser_talker_id_t talker_id;
+  const uint8_t * p_msg_id;
+  size_t msg_id_len;
+  const uint8_t * p_data;
+  size_t data_len;
+} sub_parser_param_t;
+typedef struct
+{
+  const char * msg_id;
+  const gps_parser_talker_id_t talker_id_support;
+  void (*parser_func)(sub_parser_param_t data);
+} sub_parser_func_t;
 /************************************************************************************************************/
 /*                                            MODULE TYPE                                                   */
 /************************************************************************************************************/
@@ -28,9 +36,10 @@ typedef bool (*gps_parser_func_t)(const uint8_t * p_data, uint32_t data_len);
 /************************************************************************************************************/
 /*                                           PUBLIC FUNCTION                                                */
 /************************************************************************************************************/
-void gps_parser_init();
-bool gps_parser_push(const uint8_t * p_data, uint32_t data_len);
-bool gps_parser_register_parser_func(gps_parser_func_t parser_func);
-gps_parser_talker_id_t gps_parser_get_talker_id(const uint8_t * p_data, uint32_t data_len);
-bool gps_parser_get_message_id(const uint8_t * p_data, uint32_t data_len, uint8_t * p_ret);
+// sub parser function
+void gps_parser_gps_init();
+
+SUB_PARSER_DEFINE(GGA);
+SUB_PARSER_DEFINE(GLL);
+SUB_PARSER_DEFINE(GSV);
 #endif
