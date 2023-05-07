@@ -5,6 +5,7 @@
 #include "GPSense_conf.h"
 #include "gps_parser.h"
 #include "gps_utility.h"
+#include "gps_data.h"
 #include <stdint.h>
 #include <string.h>
 /************************************************************************************************************/
@@ -38,6 +39,7 @@ void GPSense_init()
 {
   GPS_LOGI("Init GPS Library");
   gps_parser_init();
+  gps_data_init();
 }
 
 bool GPSense_feed(const char * p_data, const uint32_t data_len)

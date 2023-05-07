@@ -85,7 +85,6 @@ static bool main_parser_func(const uint8_t * p_data, uint32_t data_len)
   // Create param for sub parser
   sub_parser_param_t parser_param = {0};
   parser_param.talker_id = talker_id;
-  parser_param.p_msg_id = p_data;
   // Discard the NMEA header so that subparser does not have to do
   uint32_t comma_idx = char_find_idx(p_data, data_len, ',');
   if(comma_idx == -1)
@@ -93,10 +92,11 @@ static bool main_parser_func(const uint8_t * p_data, uint32_t data_len)
     GPS_LOGD("Can not discard NMEA header");
     return false;
   }
+  parser_param.p_msg_id = p_data + 3; // 2 byte talker id, 1 byte for '$'
+  parser_param.msg_id_len = comma_idx - 3;
   p_data += (comma_idx + 1);
   data_len -= (comma_idx + 1);
 
-  parser_param.msg_id_len = comma_idx;
   parser_param.p_data = p_data;
   parser_param.data_len = data_len;
   // Excute the sub parser 

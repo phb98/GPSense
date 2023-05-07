@@ -10,6 +10,9 @@
 #define CONFIG_GPS_SKIP_CHECKSUM_CHECK  (0)
 #define CONFIG_GPS_RCV_BUFFER_LEN       (256)
 
+#define CONFIG_GPS_UTC_TIME_MSG_ID      ("GGA") // which message ID will this library get UTC time from
+                                                // If this set to msg id that has no utc time, then this lib will never have UTC time
+
 
 // PRINTF MACRO HERE
 #define GPS_DEBUG_LEVEL_INFO    1
@@ -19,7 +22,7 @@
 #define GPS_PRINTF(...)         printf(__VA_ARGS__)
 
 #ifndef DEBUG_LEVEL
-  #define DEBUG_LEVEL GPS_DEBUG_LEVEL_INFO
+  #define DEBUG_LEVEL GPS_DEBUG_LEVEL_VERBOSE
 #endif
 
 #if DEBUG_LEVEL >= GPS_DEBUG_LEVEL_INFO

@@ -14,9 +14,10 @@
 /************************************************************************************************************/
 typedef enum 
 {
-  GPS_DATA_TIME,
+  GPS_DATA_UTC_CLOCK_TIME,
   GPS_DATA_LONGTITUDE,
   GPS_DATA_LATITUDE,
+  GPS_DATA_FIX_STATUS,
 } gps_new_data_type_t;
 
 typedef struct
@@ -32,7 +33,7 @@ typedef struct
   gps_new_data_hdr_t new_data_hdr;
   union
   {
-    gps_clock_time_t clock_time;
+    gps_clock_time_t utc_clock_time;
     gps_pos_t longtitude;
     gps_pos_t latitude;
   } data;
@@ -43,5 +44,5 @@ typedef struct
 /************************************************************************************************************/
 
 void gps_data_init();
-bool gps_data_add(gps_new_data_t * p_new_data);
+bool gps_data_add(const gps_new_data_t * p_new_data);
 #endif

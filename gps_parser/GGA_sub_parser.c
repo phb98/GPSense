@@ -58,6 +58,13 @@ SUB_PARSER_DEFINE(GGA)
     .latitude.pos_type =   GPS_POS_LAT,
     .longtitude.pos_type = GPS_POS_LONG
   };
+  gps_new_data_t new_data = 
+  {
+    .new_data_hdr.p_msg_id = data.p_msg_id,
+    .new_data_hdr.msg_id_len = data.msg_id_len,
+    .new_data_hdr.talker_id = data.talker_id
+  };
+
   const uint8_t * p_start = data.p_data;
   const uint8_t * p_end  = p_start + data.data_len - 1;
   gga_data_t currert_parsing_data = GGA_UTC;
@@ -95,12 +102,14 @@ SUB_PARSER_DEFINE(GGA)
           }
           // Parsing utc time
           const char * p_temp = (const char *) p_start;
-          parsed_data.utc_time.hour = str2int(p_temp, 2); p_temp +=2;
-          parsed_data.utc_time.minute = str2int(p_temp, 2);p_temp += 2;
-          parsed_data.utc_time.second = str2int(p_temp, 2);p_temp += 3;
-          parsed_data.utc_time.centisecond = str2int(p_temp, 3);
-          GPS_LOGD("UTC time:%02d:%02d:%02d.%0d",parsed_data.utc_time.hour, parsed_data.utc_time.minute,
-                                                  parsed_data.utc_time.second, parsed_data.utc_time.centisecond);
+          new_data.data.utc_clock_time.hour   = str2int(p_temp, 2); p_temp +=2;
+          new_data.data.utc_clock_time.minute = str2int(p_temp, 2);p_temp += 2;
+          new_data.data.utc_clock_time.second = str2int(p_temp, 2);p_temp += 3;
+          new_data.data.utc_clock_time.centisecond = str2int(p_temp, 3);
+          new_data.new_data_hdr.type = GPS_DATA_UTC_CLOCK_TIME;
+          gps_data_add(&new_data);
+          GPS_LOGD("UTC time:%02d:%02d:%02d.%03d",new_data.data.utc_clock_time.hour, new_data.data.utc_clock_time.minute,
+                                                  new_data.data.utc_clock_time.second, new_data.data.utc_clock_time.centisecond);
           break;
         }
         case GGA_LAT:
