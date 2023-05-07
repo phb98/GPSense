@@ -22,7 +22,7 @@
 #define GPS_PRINTF(...)         printf(__VA_ARGS__)
 
 #ifndef DEBUG_LEVEL
-  #define DEBUG_LEVEL GPS_DEBUG_LEVEL_VERBOSE
+  #define DEBUG_LEVEL GPS_DEBUG_LEVEL_ERROR
 #endif
 
 #if DEBUG_LEVEL >= GPS_DEBUG_LEVEL_INFO

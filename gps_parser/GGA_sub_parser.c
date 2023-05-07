@@ -1,7 +1,6 @@
 /************************************************************************************************************/
 /*                                              INCLUDE                                                     */
 /************************************************************************************************************/
-#define DEBUG_LEVEL 2
 #include "GPSense_conf.h"
 #include "gps_parser.h"
 #include "gps_parser_gps.h"
@@ -50,14 +49,14 @@ SUB_PARSER_DEFINE(GGA)
   memset(temp_buffer, 0x0, sizeof(temp_buffer));
   struct 
   {
-    gps_clock_time_t utc_time;
     gps_pos_t   longtitude;
     gps_pos_t   latitude;
-    uint8_t num_sat;
   } parsed_data =
   {
-    .latitude.pos_type =   GPS_POS_LAT,
-    .longtitude.pos_type = GPS_POS_LONG
+    .latitude.pos_type    = GPS_POS_LAT,
+    .latitude.pos         = 0,
+    .longtitude.pos_type  = GPS_POS_LONG,
+    .longtitude.pos       = 0,
   };
   gps_new_data_t new_data = 
   {
@@ -150,8 +149,10 @@ SUB_PARSER_DEFINE(GGA)
         }
         case GGA_NUM_SAT:
         {
-          parsed_data.num_sat = str2int((const char *)p_start, 2);
-          GPS_LOGD("Number Satellites:%d", parsed_data.num_sat);
+          new_data.new_data_hdr.type = GPS_DATA_NUM_SAT;
+          new_data.data.num_sat = str2int((const char *)p_start, 2);
+          gps_data_add(&new_data);
+          GPS_LOGD("Number Satellites:%d", new_data.data.num_sat);
         }
         default:
         break;
@@ -166,6 +167,14 @@ SUB_PARSER_DEFINE(GGA)
       p_start++;
     }
     currert_parsing_data++;
+  }
+  if(parsed_data.latitude.pos != 0 && parsed_data.longtitude.pos != 0)
+  {
+    // Update new position
+    new_data.new_data_hdr.type = GPS_DATA_POSITION;
+    memcpy(&new_data.data.pos.latitude, &parsed_data.latitude, sizeof(gps_pos_t));
+    memcpy(&new_data.data.pos.longtitude, &parsed_data.longtitude, sizeof(gps_pos_t));
+    gps_data_add(&new_data);
   }
 }
 /************************************************************************************************************/

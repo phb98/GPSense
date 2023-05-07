@@ -15,9 +15,9 @@
 typedef enum 
 {
   GPS_DATA_UTC_CLOCK_TIME,
-  GPS_DATA_LONGTITUDE,
-  GPS_DATA_LATITUDE,
+  GPS_DATA_POSITION,
   GPS_DATA_FIX_STATUS,
+  GPS_DATA_NUM_SAT,
 } gps_new_data_type_t;
 
 typedef struct
@@ -34,8 +34,11 @@ typedef struct
   union
   {
     gps_clock_time_t utc_clock_time;
-    gps_pos_t longtitude;
-    gps_pos_t latitude;
+    struct {
+      gps_pos_t longtitude;
+      gps_pos_t latitude;
+    } pos;
+    uint16_t num_sat;
   } data;
 } gps_new_data_t;
 

@@ -1,6 +1,7 @@
 /************************************************************************************************************/
 /*                                              INCLUDE                                                     */
 /************************************************************************************************************/
+#define DEBUG_LEVEL 4
 #include "GPSense.h"
 #include "gps_data.h"
 #include "GPSense_conf.h"
@@ -24,6 +25,8 @@
 typedef struct
 {
   gps_clock_time_t utc_time;
+  gps_pos_t longtitude;
+  gps_pos_t latitiude;
   uint16_t num_active_sat;
 } gps_current_data_t;
 static gps_current_data_t gps_current_data;
@@ -48,6 +51,7 @@ bool gps_data_add(const gps_new_data_t * p_new_data)
 
 static bool gps_data_update(gps_current_data_t * const p_cur_data, const gps_new_data_t * const p_new_data)
 {
+  #define IS_MSG_ID_EXPECT(EXPECT_MSGID)   (memcmp(p_msg_id, EXPECT_MSGID, msg_id_len) == 0)
   if(!p_new_data || !p_cur_data)
   {
     GPS_LOGE("Can not add new data, NULL ptr");
@@ -66,7 +70,9 @@ static bool gps_data_update(gps_current_data_t * const p_cur_data, const gps_new
     case GPS_DATA_UTC_CLOCK_TIME:
     {
       // Check if we allow update utc time from this message ID
-      if(memcmp(p_msg_id, CONFIG_GPS_UTC_TIME_MSG_ID, msg_id_len) == 0)
+      #ifdef CONFIG_GPS_UTC_TIME_MSG_ID
+      if(IS_MSG_ID_EXPECT(CONFIG_GPS_UTC_TIME_MSG_ID))
+      #endif
       {
         // Update UTC time
         GPS_LOGD("Update UTC time:%02d:%02d:%02d.%03d", p_new_data->data.utc_clock_time.hour, 
@@ -75,6 +81,30 @@ static bool gps_data_update(gps_current_data_t * const p_cur_data, const gps_new
                                                         p_new_data->data.utc_clock_time.centisecond);
         memcpy(&(p_cur_data->utc_time), &(p_new_data->data.utc_clock_time), sizeof(gps_clock_time_t));
       }
+      break;
+    }
+    case GPS_DATA_POSITION:
+    #ifdef CONFIG_GPS_COORDINATE_MSG_ID
+    if(IS_MSG_ID_EXPECT(CONFIG_GPS_COORDINATE_MSG_ID))
+    #endif
+    {
+      GPS_LOGD("Update Position(Lat Lon):%f %c, %f %c", p_new_data->data.pos.latitude.pos, p_new_data->data.pos.latitude.dir,
+                                                        p_new_data->data.pos.longtitude.pos, p_new_data->data.pos.longtitude.dir);
+      p_cur_data->longtitude.dir = p_new_data->data.pos.longtitude.dir;
+      p_cur_data->longtitude.pos = p_new_data->data.pos.longtitude.pos;
+      p_cur_data->latitiude.dir  = p_new_data->data.pos.latitude.dir;
+      p_cur_data->latitiude.pos  = p_new_data->data.pos.latitude.pos;
+      p_cur_data->latitiude.pos_type   = GPS_POS_LAT;
+      p_cur_data->longtitude.pos_type  = GPS_POS_LONG;
+      break;
+    }
+    case GPS_DATA_NUM_SAT:
+    #ifdef CONFIG_GPS_NUM_SAT_MSG_ID
+    if(IS_MSG_ID_EXPECT(CONFIG_GPS_NUM_SAT_MSG_ID))
+    #endif
+    {
+      GPS_LOGD("Update num sat:%d", p_new_data->data.num_sat);
+      p_cur_data->num_active_sat = p_new_data->data.num_sat;
       break;
     }
     default:
