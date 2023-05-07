@@ -135,7 +135,7 @@ SUB_PARSER_DEFINE(GGA)
         }
         case GGA_QUALITY:
         {
-          if(*p_start == 0) GPS_LOGD("Not fixed"); else GPS_LOGD("Fixed");
+          if(*p_start == '0') GPS_LOGD("Not fixed"); else GPS_LOGD("Fixed");
           break;
         }
         case GGA_NUM_SAT:
