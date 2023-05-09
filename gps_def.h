@@ -21,16 +21,23 @@ typedef enum
 } gps_dir_t;
 typedef enum
 {
+  GPS_UNIT_METER = 'M',
+  GPS_UNIT_FEET  = 'F'
+} gps_unit_t;
+typedef enum
+{
   GPS_POS_LONG,
   GPS_POS_LAT,
+  GPS_POS_ALTITUDE,
   NUM_OF_GPS_POS_T,
 } gps_pos_type_t;
 typedef float gps_long_lat_t;
 typedef struct
 {
-  gps_pos_type_t      pos_type;
   gps_long_lat_t      pos;
+  gps_pos_type_t      pos_type;
   gps_dir_t           dir;
+  gps_unit_t          unit;
 } gps_pos_t;
 
 typedef struct

@@ -12,8 +12,9 @@
 
 #define CONFIG_GPS_UTC_TIME_MSG_ID      ("GGA") // which message ID will this library get UTC time from
                                                 // If this set to msg id that has no utc time, then this lib will never have UTC time
-
-
+                                                // IF this is not define, then this library will update its time from all msg id
+//#define CONFIG_GPS_COORDINATE_MSG_ID  ("GGA")
+//#define CONFIG_GPS_NUM_SAT_MSG_ID     ("GGA")
 // PRINTF MACRO HERE
 #define GPS_DEBUG_LEVEL_INFO    1
 #define GPS_DEBUG_LEVEL_ERROR   2

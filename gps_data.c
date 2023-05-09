@@ -27,6 +27,7 @@ typedef struct
   gps_clock_time_t utc_time;
   gps_pos_t longtitude;
   gps_pos_t latitiude;
+  gps_pos_t altitude;
   uint16_t num_active_sat;
 } gps_current_data_t;
 static gps_current_data_t gps_current_data;
@@ -105,6 +106,21 @@ static bool gps_data_update(gps_current_data_t * const p_cur_data, const gps_new
     {
       GPS_LOGD("Update num sat:%d", p_new_data->data.num_sat);
       p_cur_data->num_active_sat = p_new_data->data.num_sat;
+      break;
+    }
+    case GPS_DATA_ALTITUDE:
+    #ifdef CONFIG_GPS_ALTITUDE_MSG_ID
+    if(IS_MSG_ID_EXPECT(CONFIG_GPS_NUM_SAT_MSG_ID))
+    #endif
+    {
+      if(p_new_data->data.altitude.unit != GPS_UNIT_METER)
+      {
+        GPS_LOGE("Only support altitude meter for now");
+        break;
+      }
+      GPS_LOGD("Update Altitude:%f %c", p_new_data->data.altitude.pos, p_new_data->data.altitude.unit);
+      memcpy(&(p_cur_data->altitude), &(p_new_data->data.altitude), sizeof(gps_pos_t));
+      p_cur_data->altitude.pos_type = GPS_POS_ALTITUDE;
       break;
     }
     default:

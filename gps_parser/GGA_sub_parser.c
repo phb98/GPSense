@@ -10,6 +10,7 @@
 /*                                     MACRO AND CONSTANT DEFINE                                            */
 /************************************************************************************************************/
 #define NMEA_MESSAGE_TERMINATOR ('*')
+#define DEFAULT_ALTITUDE_SEALEVEL (0xDEADBEEF)
 /************************************************************************************************************/
 /*                                            MODULE TYPE                                                   */
 /************************************************************************************************************/
@@ -22,6 +23,9 @@ typedef enum
   GGA_LON_DIR,
   GGA_QUALITY,
   GGA_NUM_SAT,
+  GGA_HDOP,
+  GGA_ALTITUDE_SEALEVEL,
+  GGA_ALTITUDE_UNIT,
   NUM_OF_GGA_SUPPORT,
 } gga_data_t; // must be in order of data appear in message
 /************************************************************************************************************/
@@ -51,12 +55,16 @@ SUB_PARSER_DEFINE(GGA)
   {
     gps_pos_t   longtitude;
     gps_pos_t   latitude;
+    gps_pos_t   alt;
   } parsed_data =
   {
     .latitude.pos_type    = GPS_POS_LAT,
     .latitude.pos         = 0,
     .longtitude.pos_type  = GPS_POS_LONG,
     .longtitude.pos       = 0,
+    .alt.pos_type         = GPS_POS_ALTITUDE,
+    .alt.unit             = '\0',
+    .alt.pos              = DEFAULT_ALTITUDE_SEALEVEL, // random number
   };
   gps_new_data_t new_data = 
   {
@@ -81,7 +89,7 @@ SUB_PARSER_DEFINE(GGA)
     comma_idx = char_find_idx(p_start, p_end - p_start + 1, ',');    
     if(comma_idx == -1) 
     {
-      GPS_LOGD("Cannot find next ',', break");
+      GPS_LOGV("Cannot find next ',', break");
       break;
     }
     else if(comma_idx > 0)
@@ -153,6 +161,18 @@ SUB_PARSER_DEFINE(GGA)
           new_data.data.num_sat = str2int((const char *)p_start, 2);
           gps_data_add(&new_data);
           GPS_LOGD("Number Satellites:%d", new_data.data.num_sat);
+          break;
+        }
+        case GGA_ALTITUDE_SEALEVEL:
+        {
+          parsed_data.alt.pos = atof(p_start);
+          break;
+        }
+        case GGA_ALTITUDE_UNIT:
+        {
+          if(*p_start == 'M') parsed_data.alt.unit = GPS_UNIT_METER;
+          else parsed_data.alt.unit = GPS_UNIT_FEET;
+          break;
         }
         default:
         break;
@@ -175,6 +195,13 @@ SUB_PARSER_DEFINE(GGA)
     memcpy(&new_data.data.pos.latitude, &parsed_data.latitude, sizeof(gps_pos_t));
     memcpy(&new_data.data.pos.longtitude, &parsed_data.longtitude, sizeof(gps_pos_t));
     gps_data_add(&new_data);
+  }
+  if(parsed_data.alt.pos != DEFAULT_ALTITUDE_SEALEVEL && parsed_data.alt.unit != '\0')
+  {
+    new_data.new_data_hdr.type = GPS_DATA_ALTITUDE;
+    memcpy(&new_data.data.altitude, &parsed_data.alt, sizeof(gps_pos_t));
+    gps_data_add(&new_data);
+    GPS_LOGD("Altitude:%f%c", parsed_data.alt.pos, parsed_data.alt.unit);
   }
 }
 /************************************************************************************************************/
