@@ -37,9 +37,10 @@ typedef struct
 /*                                           PUBLIC FUNCTION                                                */
 /************************************************************************************************************/
 // sub parser function
-void gps_parser_gps_init();
+void gps_parser_main_init();
 
 SUB_PARSER_DEFINE(GGA);
 SUB_PARSER_DEFINE(GLL);
 SUB_PARSER_DEFINE(GSV);
+SUB_PARSER_DEFINE(RMC);
 #endif

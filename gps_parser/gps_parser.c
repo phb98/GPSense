@@ -6,7 +6,7 @@
 #include "GPSense_conf.h"
 #include <string.h>
 #include "gps_utility.h"
-#include "gps_parser_gps.h"
+#include "gps_parser_main.h"
 /************************************************************************************************************/
 /*                                     MACRO AND CONSTANT DEFINE                                            */
 /************************************************************************************************************/
@@ -41,7 +41,7 @@ static void gps_parser_process(const uint8_t * p_data, uint32_t data_len);
 void gps_parser_init()
 {
   GPS_LOGI("Init Parser");
-  gps_parser_gps_init();
+  gps_parser_main_init();
 }
 bool gps_parser_push(const uint8_t * p_data, uint32_t data_len)
 {

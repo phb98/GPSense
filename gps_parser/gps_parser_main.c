@@ -2,7 +2,7 @@
 /*                                              INCLUDE                                                     */
 /************************************************************************************************************/
 #include "gps_parser.h"
-#include "gps_parser_gps.h"
+#include "gps_parser_main.h"
 #include "GPSense_conf.h"
 #include "gps_utility.h"
 #include "gps_def.h"
@@ -36,6 +36,11 @@ static const sub_parser_func_t sub_parser_table[] =
     .parser_func = SUB_PARSER_FUNC(GGA)
   },
   {
+    .msg_id = "RMC",
+    .talker_id_support = GPS_TALKER_ID_GPS | GPS_TALKER_ID_GALILEO | GPS_TALKER_ID_BEIDOU | GPS_TALKER_ID_GLONASS | GPS_TALKER_ID_COMBINE,
+    .parser_func = SUB_PARSER_FUNC(RMC)
+  },
+  {
     .msg_id = "GLL",
     .talker_id_support = GPS_TALKER_ID_GPS | GPS_TALKER_ID_GALILEO | GPS_TALKER_ID_BEIDOU | GPS_TALKER_ID_GLONASS | GPS_TALKER_ID_COMBINE,
     .parser_func = SUB_PARSER_FUNC(GLL),
@@ -49,7 +54,7 @@ static const sub_parser_func_t sub_parser_table[] =
 /************************************************************************************************************/
 /*                                           PUBLIC FUNCTION                                                */
 /************************************************************************************************************/
-void gps_parser_gps_init()
+void gps_parser_main_init()
 {
   GPS_LOGI("GPS type parser init");
   gps_parser_register_parser_func(main_parser_func);
