@@ -154,6 +154,7 @@ SUB_PARSER_DEFINE(RMC)
           GPS_LOGD("UTC Date(dd/mm/yy):%02d/%02d/%04d", new_data.data.utc_date_time.day,
                                                         new_data.data.utc_date_time.month,
                                                         new_data.data.utc_date_time.year);
+          gps_data_add(&new_data);
           break;
         }
         default:
