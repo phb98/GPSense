@@ -10,7 +10,7 @@
 #define CONFIG_GPS_SKIP_CHECKSUM_CHECK  (0)
 #define CONFIG_GPS_RCV_BUFFER_LEN       (256)
 
-#define CONFIG_GPS_UTC_TIME_MSG_ID      ("GGA") // which message ID will this library get UTC time from
+#define CONFIG_GPS_UTC_CLOCK_TIME_MSG_ID      ("GGA") // which message ID will this library get UTC time from
                                                 // If this set to msg id that has no utc time, then this lib will never have UTC time
                                                 // IF this is not define, then this library will update its time from all msg id
 //#define CONFIG_GPS_COORDINATE_MSG_ID  ("GGA")
@@ -49,8 +49,6 @@
 #else
   #define GPS_LOGV(format, ...)
 #endif
-
-
 
 /************************************************************************************************************/
 /*                                            MODULE TYPE                                                   */

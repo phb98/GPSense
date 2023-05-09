@@ -48,6 +48,12 @@ typedef struct
   uint8_t centisecond;
 } gps_clock_time_t;
 
+typedef struct
+{
+  uint16_t year;
+  uint8_t month;
+  uint8_t day;
+} gps_date_time_t;
 typedef enum
 {
   GPS_NO_FIX,

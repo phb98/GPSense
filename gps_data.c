@@ -24,7 +24,8 @@
 // This struct contained all the data that has been parsed, this struct is updated by all sub parser
 typedef struct
 {
-  gps_clock_time_t utc_time;
+  gps_clock_time_t utc_clock_time;
+  gps_date_time_t  utc_date_time;
   gps_pos_t longtitude;
   gps_pos_t latitiude;
   gps_pos_t altitude;
@@ -71,8 +72,8 @@ static bool gps_data_update(gps_current_data_t * const p_cur_data, const gps_new
     case GPS_DATA_UTC_CLOCK_TIME:
     {
       // Check if we allow update utc time from this message ID
-      #ifdef CONFIG_GPS_UTC_TIME_MSG_ID
-      if(IS_MSG_ID_EXPECT(CONFIG_GPS_UTC_TIME_MSG_ID))
+      #ifdef CONFIG_GPS_UTC_CLOCK_TIME_MSG_ID
+      if(IS_MSG_ID_EXPECT(CONFIG_GPS_UTC_CLOCK_TIME_MSG_ID))
       #endif
       {
         // Update UTC time
@@ -80,7 +81,7 @@ static bool gps_data_update(gps_current_data_t * const p_cur_data, const gps_new
                                                         p_new_data->data.utc_clock_time.minute,
                                                         p_new_data->data.utc_clock_time.second,
                                                         p_new_data->data.utc_clock_time.centisecond);
-        memcpy(&(p_cur_data->utc_time), &(p_new_data->data.utc_clock_time), sizeof(gps_clock_time_t));
+        memcpy(&(p_cur_data->utc_clock_time), &(p_new_data->data.utc_clock_time), sizeof(gps_clock_time_t));
       }
       break;
     }
@@ -110,7 +111,7 @@ static bool gps_data_update(gps_current_data_t * const p_cur_data, const gps_new
     }
     case GPS_DATA_ALTITUDE:
     #ifdef CONFIG_GPS_ALTITUDE_MSG_ID
-    if(IS_MSG_ID_EXPECT(CONFIG_GPS_NUM_SAT_MSG_ID))
+    if(IS_MSG_ID_EXPECT(CONFIG_GPS_ALTITUDE_MSG_ID))
     #endif
     {
       if(p_new_data->data.altitude.unit != GPS_UNIT_METER)
@@ -121,6 +122,17 @@ static bool gps_data_update(gps_current_data_t * const p_cur_data, const gps_new
       GPS_LOGD("Update Altitude:%f %c", p_new_data->data.altitude.pos, p_new_data->data.altitude.unit);
       memcpy(&(p_cur_data->altitude), &(p_new_data->data.altitude), sizeof(gps_pos_t));
       p_cur_data->altitude.pos_type = GPS_POS_ALTITUDE;
+      break;
+    }
+    case GPS_DATA_UTC_DATE_TIME:
+    #ifdef CONFIG_GPS_UTC_DATE_TIME_MSG_ID
+    if(IS_MSG_ID_EXPECT(CONFIG_GPS_UTC_DATE_TIME_MSG_ID))
+    #endif
+    {
+      memcpy(&(p_cur_data->utc_date_time), &(p_new_data->data.utc_date_time), sizeof(gps_date_time_t));
+      GPS_LOGD("Update Date(dd/mm/yy):%02d/%02d/%04d",  p_new_data->data.utc_date_time.day,
+                                                        p_new_data->data.utc_date_time.month,
+                                                        p_new_data->data.utc_date_time.year);
       break;
     }
     default:

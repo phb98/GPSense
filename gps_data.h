@@ -14,6 +14,7 @@
 typedef enum 
 {
   GPS_DATA_UTC_CLOCK_TIME,
+  GPS_DATA_UTC_DATE_TIME,
   GPS_DATA_POSITION,
   GPS_DATA_FIX_STATUS,
   GPS_DATA_ALTITUDE,
@@ -40,6 +41,7 @@ typedef struct
     } pos;
     gps_pos_t altitude;
     uint16_t num_sat;
+    gps_date_time_t utc_date_time;
   } data;
 } gps_new_data_t;
 
