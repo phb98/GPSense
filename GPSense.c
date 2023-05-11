@@ -60,6 +60,11 @@ bool GPSense_feed(const char * p_data, const uint32_t data_len)
   gps_process();
   return true;
 }
+
+void GPSense_get_data(GPSense_data_t * const p_data)
+{
+  if(!p_data) GPS_LOGE("Invalid input");
+}
 /************************************************************************************************************/
 /*                                          PRIVATE FUNCTION                                                */
 /************************************************************************************************************/
