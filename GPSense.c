@@ -6,6 +6,7 @@
 #include "gps_parser.h"
 #include "gps_utility.h"
 #include "gps_data.h"
+#include "gps_data.h"
 #include <stdint.h>
 #include <string.h>
 /************************************************************************************************************/
@@ -63,7 +64,7 @@ bool GPSense_feed(const char * p_data, const uint32_t data_len)
 
 void GPSense_get_data(GPSense_data_t * const p_data)
 {
-  if(!p_data) GPS_LOGE("Invalid input");
+  gps_data_get_current_data(p_data);
 }
 /************************************************************************************************************/
 /*                                          PRIVATE FUNCTION                                                */
@@ -126,3 +127,4 @@ static void gps_send_nmea_msg(uint8_t * p_msg, uint32_t len)
   GPS_LOGD("%.*s", len, p_msg);
   if(!gps_parser_push(p_msg, len)) GPS_LOGE("push NMEA msg to parser fail");
 }
+

@@ -22,15 +22,6 @@
 /*                                          MODULE VARIABLE                                                 */
 /************************************************************************************************************/
 // This struct contained all the data that has been parsed, this struct is updated by all sub parser
-typedef struct
-{
-  gps_clock_time_t utc_clock_time;
-  gps_date_time_t  utc_date_time;
-  gps_pos_t longtitude;
-  gps_pos_t latitiude;
-  gps_pos_t altitude;
-  uint16_t num_active_sat;
-} gps_current_data_t;
 static gps_current_data_t gps_current_data;
 /************************************************************************************************************/
 /*                                     PRIVATE FUNCTION PROTOTYPES                                          */
@@ -43,9 +34,20 @@ void gps_data_init()
 {
   GPS_LOGI("Gps data init");
 }
+
 bool gps_data_add(const gps_new_data_t * p_new_data)
 {
   return gps_data_update(&gps_current_data, p_new_data);
+}
+
+void gps_data_get_current_data(gps_current_data_t * const p_data)
+{
+  if(!p_data)
+  {
+    GPS_LOGE("Invalid input");
+    return;
+  }
+  memcpy(p_data, &gps_current_data, sizeof(gps_current_data));
 }
 /************************************************************************************************************/
 /*                                          PRIVATE FUNCTION                                                */
@@ -94,9 +96,9 @@ static bool gps_data_update(gps_current_data_t * const p_cur_data, const gps_new
                                                         p_new_data->data.pos.longtitude.pos, p_new_data->data.pos.longtitude.dir);
       p_cur_data->longtitude.dir = p_new_data->data.pos.longtitude.dir;
       p_cur_data->longtitude.pos = p_new_data->data.pos.longtitude.pos;
-      p_cur_data->latitiude.dir  = p_new_data->data.pos.latitude.dir;
-      p_cur_data->latitiude.pos  = p_new_data->data.pos.latitude.pos;
-      p_cur_data->latitiude.pos_type   = GPS_POS_LAT;
+      p_cur_data->latitude.dir  = p_new_data->data.pos.latitude.dir;
+      p_cur_data->latitude.pos  = p_new_data->data.pos.latitude.pos;
+      p_cur_data->latitude.pos_type   = GPS_POS_LAT;
       p_cur_data->longtitude.pos_type  = GPS_POS_LONG;
       break;
     }
@@ -130,9 +132,9 @@ static bool gps_data_update(gps_current_data_t * const p_cur_data, const gps_new
     #endif
     {
       memcpy(&(p_cur_data->utc_date_time), &(p_new_data->data.utc_date_time), sizeof(gps_date_time_t));
-      GPS_LOGD("Update Date(dd/mm/yy):%02d/%02d/%04d",  p_new_data->data.utc_date_time.day,
-                                                        p_new_data->data.utc_date_time.month,
-                                                        p_new_data->data.utc_date_time.year);
+      GPS_LOGD("Update UTC Date(dd/mm/yy):%02d/%02d/%04d",  p_new_data->data.utc_date_time.day,
+                                                            p_new_data->data.utc_date_time.month,
+                                                            p_new_data->data.utc_date_time.year);
       break;
     }
     default:

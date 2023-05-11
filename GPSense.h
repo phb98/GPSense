@@ -5,6 +5,7 @@
 /************************************************************************************************************/
 #include <stdint.h>
 #include <stdbool.h>
+#include "gps_def.h"
 /************************************************************************************************************/
 /*                                     MACRO AND CONSTANT DEFINE                                            */
 /************************************************************************************************************/
@@ -39,17 +40,7 @@ typedef struct
   uint8_t minute;
   uint8_t second;
 } GPSense_time_t;
-typedef struct
-{
-  float              longtitude;
-  GPSense_long_dir_t long_dir;
-  float              latitude;
-  GPSense_lat_dir_t  lat_dir;
-  float              altitude;
-  GPSense_time_t     UTC_time;
-  uint16_t           num_sat;
-  GPSense_fix_t      fix_status;
-}GPSense_data_t;
+typedef gps_current_data_t GPSense_data_t;
 
 /************************************************************************************************************/
 /*                                           PUBLIC FUNCTION                                                */

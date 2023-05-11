@@ -51,4 +51,5 @@ typedef struct
 
 void gps_data_init();
 bool gps_data_add(const gps_new_data_t * p_new_data);
+void gps_data_get_current_data(gps_current_data_t * const p_data);
 #endif

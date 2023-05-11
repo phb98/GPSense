@@ -61,6 +61,16 @@ typedef enum
   GPS_FIXED_3D,
   NUM_OF_GPS_FIX_T,
 } gps_fix_t;
+
+typedef struct
+{
+  gps_clock_time_t utc_clock_time;
+  gps_date_time_t  utc_date_time;
+  gps_pos_t longtitude;
+  gps_pos_t latitude;
+  gps_pos_t altitude;
+  uint16_t num_active_sat;
+} gps_current_data_t;
 /************************************************************************************************************/
 /*                                           PUBLIC FUNCTION                                                */
 /************************************************************************************************************/
