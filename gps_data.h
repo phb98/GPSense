@@ -19,6 +19,7 @@ typedef enum
   GPS_DATA_FIX_STATUS,
   GPS_DATA_ALTITUDE,
   GPS_DATA_NUM_SAT,
+  GPS_DATA_GROUND_SPEED,
 } gps_new_data_type_t;
 
 typedef struct
@@ -42,6 +43,7 @@ typedef struct
     gps_pos_t altitude;
     uint16_t num_sat;
     gps_date_time_t utc_date_time;
+    gps_speed_t ground_speed;
   } data;
 } gps_new_data_t;
 

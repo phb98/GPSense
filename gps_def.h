@@ -22,7 +22,9 @@ typedef enum
 typedef enum
 {
   GPS_UNIT_METER = 'M',
-  GPS_UNIT_FEET  = 'F'
+  GPS_UNIT_FEET  = 'F',
+  GPS_UNIT_KMH   = 'K',
+  GPS_UNIT_KNOT  = 'N',
 } gps_unit_t;
 typedef enum
 {
@@ -64,11 +66,17 @@ typedef enum
 
 typedef struct
 {
+  gps_unit_t unit;
+  float value;
+} gps_speed_t;
+typedef struct
+{
   gps_clock_time_t utc_clock_time;
   gps_date_time_t  utc_date_time;
   gps_pos_t longtitude;
   gps_pos_t latitude;
   gps_pos_t altitude;
+  gps_speed_t ground_speed;
   uint16_t num_active_sat;
 } gps_current_data_t;
 /************************************************************************************************************/

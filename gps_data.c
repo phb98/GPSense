@@ -85,8 +85,8 @@ static bool gps_data_update(gps_current_data_t * const p_cur_data, const gps_new
                                                         p_new_data->data.utc_clock_time.centisecond);
         memcpy(&(p_cur_data->utc_clock_time), &(p_new_data->data.utc_clock_time), sizeof(gps_clock_time_t));
       }
-      break;
     }
+    break;
     case GPS_DATA_POSITION:
     #ifdef CONFIG_GPS_COORDINATE_MSG_ID
     if(IS_MSG_ID_EXPECT(CONFIG_GPS_COORDINATE_MSG_ID))
@@ -100,8 +100,8 @@ static bool gps_data_update(gps_current_data_t * const p_cur_data, const gps_new
       p_cur_data->latitude.pos  = p_new_data->data.pos.latitude.pos;
       p_cur_data->latitude.pos_type   = GPS_POS_LAT;
       p_cur_data->longtitude.pos_type  = GPS_POS_LONG;
-      break;
     }
+    break;
     case GPS_DATA_NUM_SAT:
     #ifdef CONFIG_GPS_NUM_SAT_MSG_ID
     if(IS_MSG_ID_EXPECT(CONFIG_GPS_NUM_SAT_MSG_ID))
@@ -109,8 +109,8 @@ static bool gps_data_update(gps_current_data_t * const p_cur_data, const gps_new
     {
       GPS_LOGD("Update num sat:%d", p_new_data->data.num_sat);
       p_cur_data->num_active_sat = p_new_data->data.num_sat;
-      break;
     }
+    break;
     case GPS_DATA_ALTITUDE:
     #ifdef CONFIG_GPS_ALTITUDE_MSG_ID
     if(IS_MSG_ID_EXPECT(CONFIG_GPS_ALTITUDE_MSG_ID))
@@ -124,8 +124,8 @@ static bool gps_data_update(gps_current_data_t * const p_cur_data, const gps_new
       GPS_LOGD("Update Altitude:%f %c", p_new_data->data.altitude.pos, p_new_data->data.altitude.unit);
       memcpy(&(p_cur_data->altitude), &(p_new_data->data.altitude), sizeof(gps_pos_t));
       p_cur_data->altitude.pos_type = GPS_POS_ALTITUDE;
-      break;
     }
+    break;
     case GPS_DATA_UTC_DATE_TIME:
     #ifdef CONFIG_GPS_UTC_DATE_TIME_MSG_ID
     if(IS_MSG_ID_EXPECT(CONFIG_GPS_UTC_DATE_TIME_MSG_ID))
@@ -135,8 +135,18 @@ static bool gps_data_update(gps_current_data_t * const p_cur_data, const gps_new
       GPS_LOGD("Update UTC Date(dd/mm/yy):%02d/%02d/%04d",  p_new_data->data.utc_date_time.day,
                                                             p_new_data->data.utc_date_time.month,
                                                             p_new_data->data.utc_date_time.year);
-      break;
     }
+    break;
+    case GPS_DATA_GROUND_SPEED:
+    #ifdef CONFIG_GPS_GROUND_SPEED_MSG_ID
+    if(IS_MSG_ID_EXPECT(CONFIG_GPS_GROUND_SPEED_MSG_ID))
+    #endif
+    {
+      memcpy(&(p_cur_data->ground_speed), &(p_new_data->data.ground_speed), sizeof(gps_speed_t));
+      GPS_LOGD("Update ground speed:%f %s", p_new_data->data.ground_speed.value, p_new_data->data.ground_speed.unit == GPS_UNIT_KMH ?
+                                                                                 "KM/H" : "Knots");
+    }
+    break;
     default:
     GPS_LOGE("Can not add new GPS data, unknow type");
     break;

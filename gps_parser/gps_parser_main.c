@@ -49,7 +49,12 @@ static const sub_parser_func_t sub_parser_table[] =
     .msg_id = "GSV",
     .talker_id_support = GPS_TALKER_ID_GPS | GPS_TALKER_ID_GALILEO | GPS_TALKER_ID_BEIDOU | GPS_TALKER_ID_GLONASS | GPS_TALKER_ID_COMBINE,
     .parser_func = SUB_PARSER_FUNC(GSV),
-  }
+  },
+  {
+    .msg_id = "VTG",
+    .talker_id_support = GPS_TALKER_ID_GPS | GPS_TALKER_ID_GALILEO | GPS_TALKER_ID_BEIDOU | GPS_TALKER_ID_GLONASS | GPS_TALKER_ID_COMBINE,
+    .parser_func = SUB_PARSER_FUNC(VTG),
+  },  
 };
 /************************************************************************************************************/
 /*                                           PUBLIC FUNCTION                                                */
