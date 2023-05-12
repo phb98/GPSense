@@ -1,6 +1,7 @@
 /************************************************************************************************************/
 /*                                              INCLUDE                                                     */
 /************************************************************************************************************/
+#define DEBUG_LEVEL 4
 #include "GPSense_conf.h"
 #include "gps_parser.h"
 #include "gps_parser_main.h"
@@ -73,43 +74,16 @@ SUB_PARSER_DEFINE(GGA)
     .new_data_hdr.talker_id = data.talker_id
   };
 
-  const uint8_t * p_start = data.p_data;
-  const uint8_t * p_end  = p_start + data.data_len - 1;
-  gga_data_t currert_parsing_data = GGA_UTC;
-  int comma_idx = -1;
-  GPS_LOGV("Start:%c - End:%c", *p_start, *p_end);
-  while(p_start <= p_end && (currert_parsing_data < NUM_OF_GGA_SUPPORT))
+  for(gga_data_t currert_parsing_data = GGA_UTC; currert_parsing_data < NUM_OF_GGA_SUPPORT; currert_parsing_data++)
   {
-    if(*p_start == NMEA_MESSAGE_TERMINATOR)
+    if(gps_parser_get_data_field(data.p_data, data.data_len, currert_parsing_data, temp_buffer, sizeof(temp_buffer)))
     {
-      GPS_LOGV("Sub parser done");
-      break;
-    }
-    // parser each data field
-    comma_idx = char_find_idx(p_start, p_end - p_start + 1, ',');    
-    if(comma_idx == -1) 
-    {
-      GPS_LOGV("Cannot find next ',', break");
-      break;
-    }
-    else if(comma_idx > 0)
-    {
-      // this data field has data
-      GPS_LOGV("Comma_idx:%d", comma_idx);
-      memcpy(temp_buffer, p_start, comma_idx);
-      GPS_LOGV("Field %d: %.*s, len:%d", currert_parsing_data, comma_idx, temp_buffer, strlen((const char *)temp_buffer));
       switch(currert_parsing_data)
       {
         case GGA_UTC:
         {
-          // make sure we have enough data
-          if(comma_idx < 10)
-          {
-            GPS_LOGD("Field %d not have enough data", currert_parsing_data);
-            break;
-          }
           // Parsing utc time
-          const char * p_temp = (const char *) p_start;
+          const char * p_temp = (const char *) temp_buffer;
           new_data.data.utc_clock_time.hour   = str2int(p_temp, 2); p_temp +=2;
           new_data.data.utc_clock_time.minute = str2int(p_temp, 2);p_temp += 2;
           new_data.data.utc_clock_time.second = str2int(p_temp, 2);p_temp += 3;
@@ -122,7 +96,7 @@ SUB_PARSER_DEFINE(GGA)
         }
         case GGA_LAT:
         {
-          const char * p_temp = (const char *)p_start;
+          const char * p_temp = (const char *)temp_buffer;
           parsed_data.latitude.pos = str2int(p_temp, 2); p_temp +=2;
           parsed_data.latitude.pos += (atof(p_temp) / 60.0);
           GPS_LOGD("Latitude:%f", parsed_data.latitude.pos);
@@ -130,21 +104,21 @@ SUB_PARSER_DEFINE(GGA)
         }
         case GGA_LAT_DIR:
         {
-          if(*p_start == 'N') parsed_data.latitude.dir = GPS_DIR_NORTH;
+          if(*temp_buffer == 'N') parsed_data.latitude.dir = GPS_DIR_NORTH;
           else parsed_data.latitude.dir = GPS_DIR_SOUTH; // this risky, but I will take it anyway
           GPS_LOGD("Latitude Dir:%c", parsed_data.latitude.dir);
           break;
         }
         case GGA_LON_DIR:
         {
-          if(*p_start == 'W') parsed_data.longtitude.dir = GPS_DIR_WEST;
+          if(*temp_buffer == 'W') parsed_data.longtitude.dir = GPS_DIR_WEST;
           else parsed_data.longtitude.dir = GPS_DIR_EAST; // this risky, but I will take it anyway
           GPS_LOGD("Longtitude Dir:%c", parsed_data.longtitude.dir);
           break;
         }
         case GGA_LON:
         {
-          const char *p_temp = (const char *)p_start;
+          const char *p_temp = (const char *)temp_buffer;
           parsed_data.longtitude.pos = str2int(p_temp, 3); p_temp +=3;
           parsed_data.longtitude.pos += (atof(p_temp) / 60.0);
           GPS_LOGD("Longtitude:%f", parsed_data.longtitude.pos);
@@ -152,41 +126,33 @@ SUB_PARSER_DEFINE(GGA)
         }
         case GGA_QUALITY:
         {
-          if(*p_start == '0') GPS_LOGD("Not fixed"); else GPS_LOGD("Fixed");
+          if(*temp_buffer == '0') GPS_LOGD("Not fixed"); else GPS_LOGD("Fixed");
           break;
         }
         case GGA_NUM_SAT:
         {
           new_data.new_data_hdr.type = GPS_DATA_NUM_SAT;
-          new_data.data.num_sat = str2int((const char *)p_start, 2);
+          new_data.data.num_sat = str2int((const char *)temp_buffer, 2);
           gps_data_add(&new_data);
           GPS_LOGD("Number Satellites:%d", new_data.data.num_sat);
           break;
         }
         case GGA_ALTITUDE_SEALEVEL:
         {
-          parsed_data.alt.pos = atof(p_start);
+          parsed_data.alt.pos = atof(temp_buffer);
           break;
         }
         case GGA_ALTITUDE_UNIT:
         {
-          if(*p_start == 'M') parsed_data.alt.unit = GPS_UNIT_METER;
+          if(*temp_buffer == 'M') parsed_data.alt.unit = GPS_UNIT_METER;
           else parsed_data.alt.unit = GPS_UNIT_FEET;
           break;
         }
         default:
         break;
       }
-      memset(temp_buffer, 0x0, sizeof(temp_buffer));
-      p_start += (comma_idx + 1);
     }
-    else
-    {
-      // This data field has no data, try next field
-      GPS_LOGV("Field:%d has no data", currert_parsing_data);
-      p_start++;
-    }
-    currert_parsing_data++;
+    else GPS_LOGD("Fail to get data field:%d", currert_parsing_data);
   }
   if(parsed_data.latitude.pos != 0 && parsed_data.longtitude.pos != 0)
   {

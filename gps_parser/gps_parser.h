@@ -33,4 +33,8 @@ bool gps_parser_push(const uint8_t * p_data, uint32_t data_len);
 bool gps_parser_register_parser_func(gps_parser_func_t parser_func);
 gps_parser_talker_id_t gps_parser_get_talker_id(const uint8_t * p_data, uint32_t data_len);
 bool gps_parser_get_message_id(const uint8_t * p_data, uint32_t data_len, uint8_t * p_ret);
+
+
+bool gps_parser_get_data_field(const uint8_t * p_data, uint32_t data_len, 
+                               const uint8_t num_field, uint8_t * const p_ret, const uint32_t ret_max_len);
 #endif

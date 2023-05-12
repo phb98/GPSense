@@ -1,6 +1,7 @@
 /************************************************************************************************************/
 /*                                              INCLUDE                                                     */
 /************************************************************************************************************/
+#define DEBUG_LEVEL 1
 #include "GPSense.h"
 #include "gps_parser.h"
 #include "GPSense_conf.h"
@@ -151,6 +152,69 @@ bool gps_parser_get_message_id(const uint8_t * p_data, uint32_t data_len, uint8_
   memcpy(p_ret, p_data, comma_idx);
   GPS_LOGV("Message id: %.*s", comma_idx, p_ret);
   return true;
+}
+/**
+ * This function return a string contain data at num field in nmea message
+ * String is null terminated
+ * This assume nmea header is discarded
+*/
+bool gps_parser_get_data_field(const uint8_t * p_data, uint32_t data_len, 
+                               const uint8_t num_field, uint8_t * const p_ret, const uint32_t ret_max_len)
+{
+  // sanity check
+  if(!p_data || !p_ret || ret_max_len == 0 || data_len == 0)
+  {
+    GPS_LOGE("Invalid Input");
+    return false;
+  }
+  memset(p_ret, 0x0, ret_max_len);
+  const uint8_t * p_start = p_data;
+  const uint8_t * p_end   = p_data + data_len - 1;
+  uint8_t temp_buffer[32];
+  uint8_t current_num_field = 0;
+  while(p_start <= p_end && (current_num_field <= num_field))
+  {
+    if(*p_start == CHECKSUM_START_CHAR)
+    {
+      GPS_LOGV("Sub parser done");
+      break;
+    }
+    // parser each data field
+    uint32_t comma_idx = char_find_idx(p_start, p_end - p_start + 1, ',');    
+    if(comma_idx == -1) 
+    {
+      GPS_LOGV("Cannot find next ',', break");
+      break;
+    }
+    else if(comma_idx > 0)
+    {
+      // this data field has data
+      GPS_LOGV("Comma_idx:%d", comma_idx);
+      memcpy(temp_buffer, p_start, comma_idx);
+      GPS_LOGV("Field %d: %.*s, len:%d", current_num_field, comma_idx, temp_buffer, strlen((const char *)temp_buffer));
+      // at the field we want
+      if(current_num_field == num_field)
+      {
+        GPS_LOGV("Found field");
+        if(comma_idx < ret_max_len){ 
+          memcpy(p_ret, p_start, comma_idx);
+          return true;
+        }
+        else return false;
+      }
+      memset(temp_buffer, 0x0, sizeof(temp_buffer));
+      p_start += (comma_idx + 1);
+    }
+    else
+    {
+      // This data field has no data, try next field
+      GPS_LOGV("Field:%d has no data", current_num_field);
+      p_start++;
+    }
+    current_num_field++;
+  }
+  GPS_LOGD("Can not find data field:%d", num_field);
+  return false; // fail to find
 }
 /************************************************************************************************************/
 /*                                          PRIVATE FUNCTION                                                */
